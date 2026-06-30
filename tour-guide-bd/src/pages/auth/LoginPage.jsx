@@ -28,6 +28,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 rounded-2xl mb-3">
             <MapPin size={24} className="text-primary-600" />
           </div>
+          
           <h1 className="text-xl font-bold text-gray-900">Welcome back</h1>
           <p className="text-sm text-gray-500 mt-1">Sign in to TourGuide BD</p>
         </div>

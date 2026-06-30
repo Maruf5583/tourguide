@@ -9,6 +9,12 @@ const client = axios.create({
 client.interceptors.request.use((config) => {
   const token = tokenStorage.getAccess()
   if (token) config.headers.Authorization = `Bearer ${token}`
+
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type']
+    delete config.headers['content-type']
+  }
+
   return config
 })
 
@@ -33,8 +39,16 @@ client.interceptors.response.use(
           return client(original)
         })
       }
+
       original._retry = true
       refreshing = true
+
+      // ✅ retry এও FormData check
+      if (original.data instanceof FormData) {
+        delete original.headers['Content-Type']
+        delete original.headers['content-type']
+      }
+
       try {
         const userId       = tokenStorage.getUser()?.id
         const refreshToken = tokenStorage.getRefresh()

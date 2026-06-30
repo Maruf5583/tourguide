@@ -6,8 +6,9 @@ import { useAuthStore } from '../../store/auth.store'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import { formatDate, formatTime } from '../../utils/formatters'
 import { resolveImageUrl } from '../../utils/imageUrl'
-import { User, Camera, Save, Heart, CheckCircle, History, MapPinned, ChevronRight } from 'lucide-react'
+import { User, Camera, Save, Heart, CheckCircle, History, MapPinned, ChevronRight, Calendar } from 'lucide-react'
 import toast from 'react-hot-toast'
+
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore()
@@ -145,6 +146,10 @@ export default function ProfilePage() {
           <p className="text-lg font-bold text-gray-900">{visitHistory?.totalCount ?? 0}</p>
           <p className="text-xs text-gray-500">Visits</p>
         </Link>
+         <Link to="/guide/my-bookings" className="card p-4 text-center hover:shadow-md transition-shadow">
+  <Calendar size={18} className="mx-auto mb-1 text-purple-500" />
+  <p className="text-xs text-gray-500">My bookings</p>
+</Link>
       </div>
 
       {/* ── Favourites preview ── */}
@@ -219,6 +224,7 @@ export default function ProfilePage() {
           <Link to="/saved-districts" className="text-xs text-primary-600 hover:underline flex items-center gap-0.5">
             Manage <ChevronRight size={12} />
           </Link>
+         
         </div>
         {!savedDistricts?.length ? (
           <p className="text-sm text-gray-400 py-2">No saved districts yet</p>

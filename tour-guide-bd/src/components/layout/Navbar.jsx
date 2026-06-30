@@ -58,11 +58,23 @@ const isAdmin = roles.includes('admin') || roles.includes('moderator')
           <Link to="/trip-planner" className="px-3 py-1.5 text-sm text-gray-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors">
             Trip Planner
           </Link>
+           <Link to="/guides" className="px-3 py-1.5 text-sm text-gray-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors">
+            Tour Guides
+          </Link>
+         
           {isAuthenticated && (
             <Link to="/places/create" className="px-3 py-1.5 text-sm text-gray-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1">
               <Plus size={14} /> Add Place
             </Link>
+
+            
           )}
+
+    
+         {user?.roles?.includes('TourGuide') && (
+         <Link to="/guide/dashboard" className="px-3 py-1.5 text-sm text-gray-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1">Guide Dashboard</Link>
+          )}
+
           {isAdmin && (
             <Link to="/admin" className="px-3 py-1.5 text-sm text-gray-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1">
               <Shield size={14} /> Admin
