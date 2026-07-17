@@ -1,18 +1,23 @@
 import { NavLink } from 'react-router-dom'
+import { CreditCard } from 'lucide-react'
 import {
   LayoutDashboard, Users, MapPin, Star,
   Flag, FileText, Radio, UserCheck
 } from 'lucide-react'
 
 const links = [
-  { to: '/admin',                label: 'Dashboard',          icon: LayoutDashboard, end: true },
-  { to: '/admin/users',          label: 'Users',              icon: Users },
-  { to: '/admin/places',         label: 'Pending places',     icon: MapPin },
-  { to: '/admin/reviews',        label: 'Pending reviews',    icon: Star },
-  { to: '/admin/reports',        label: 'Reports',            icon: Flag },
-  { to: '/admin/guide-apps',     label: 'Guide applications', icon: UserCheck },
-  { to: '/admin/audit',          label: 'Audit logs',         icon: FileText },
-  { to: '/admin/broadcast',      label: 'Broadcast',          icon: Radio },
+  { to: '/admin',                     label: 'Dashboard',          icon: LayoutDashboard, end: true },
+  { to: '/admin/users',               label: 'Users',              icon: Users },
+  { to: '/admin/places',              label: 'Pending places',     icon: MapPin },
+  { to: '/admin/reviews',             label: 'Pending reviews',    icon: Star },
+  { to: '/admin/guide-applications',  label: 'Guide applications', icon: UserCheck },
+  { to: '/admin/guides',              label: 'Manage guides',      icon: Users },
+  { to: '/admin/reports',             label: 'Reports',            icon: Flag },
+  { to: '/admin/audit',               label: 'Audit logs',         icon: FileText },
+  { to: '/admin/broadcast',           label: 'Broadcast',          icon: Radio },
+  { to: '/admin/bookings', label: 'Bookings', icon: CreditCard },
+  { to: '/admin/financial-dashboard', label: 'Financial Dashboard', icon: LayoutDashboard },
+{ to: '/admin/withdrawals',         label: 'Withdrawals',         icon: CreditCard },
 ]
 
 export default function Sidebar() {

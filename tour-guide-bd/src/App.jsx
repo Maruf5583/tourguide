@@ -6,6 +6,11 @@ import PrivateRoute from './routes/PrivateRoute'
 import AdminRoute from './routes/AdminRoute'
 import GuideRoute from './routes/GuideRoute'
 
+
+import AdminFinancialDashboard from "./pages/admin/AdminFinancialDashboard";
+import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
+import GuideDashboard from "./pages/guide/GuideDashboard";
+
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -32,22 +37,22 @@ import BroadcastPage from './pages/admin/BroadcastPage'
 import Footer from './components/layout/Footer'
 
 import ApplyGuidePage from './pages/guide/ApplyGuidePage'
-import GuideDashboardPage from './pages/guide/GuideDashboardPage'
-import GuidePackagesPage from './pages/guide/GuidePackagesPage'
-import EditPackagePage from './pages/guide/EditPackagePage'
-import BookGuidePage from './pages/guide/BookGuidePage'
 import GuideApplicationsPage from './pages/admin/GuideApplicationsPage'
-import GuidesListPage from './pages/guide/GuidesListPage'
-import GuideProfilePage from './pages/guide/GuideProfilePage'
-
-// ✅ If these files don't exist yet, comment out these 3 lines + the 2 routes below
-import BookingPaymentPage from './pages/guide/BookingPaymentPage'
-import BookingSuccessPage from './pages/guide/BookingSuccessPage'
-
-
-import MyBookingsPage from "./pages/guide/MyBookingsPage";
-import MyBookingDetailPage from "./pages/guide/MyBookingDetailPage";
+import GuidesListPage from './pages/admin/GuidesListPage'
 // ...
+import GuidesPage from './pages/guide/GuidesPage'
+import GuideDetailPage from './pages/guide/GuideDetailPage'
+
+import MyPackagesPage from './pages/guide/MyPackagesPage'
+
+import MyBookingsPage from './pages/user/MyBookingsPage'
+
+import AdminBookingsPage from './pages/admin/AdminBookingsPage'
+import About from './pages/About'
+import Contact from './pages/Contact'
+
+
+
 
 
 function AdminLayout({ children }) {
@@ -73,9 +78,12 @@ export default function App() {
         <Route path="/places/:id" element={<PlaceDetailPage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/trip-planner" element={<TripPlannerPage />} />
-        <Route path="/guides" element={<GuidesListPage />} />
-        <Route path="/guide/:guideId" element={<GuideProfilePage />} />
 
+        <Route path="/guides" element={<GuidesPage />} />
+        <Route path="/guides/:guideId" element={<GuideDetailPage />} />
+       <Route path="/about" element={<About />} />
+<Route path="/contact" element={<Contact />} />
+       
         {/* Private */}
         <Route element={<PrivateRoute />}>
           <Route path="/places/create" element={<CreatePlacePage />} />
@@ -87,34 +95,36 @@ export default function App() {
           <Route path="/checkins" element={<CheckInsPage />} />
           <Route path="/visit-history" element={<VisitHistoryPage />} />
           <Route path="/saved-districts" element={<SavedDistrictsPage />} />
-          <Route path="/guide/apply" element={<ApplyGuidePage />} />
-          <Route path="/guide/book/:packageId" element={<BookGuidePage />} />
-          {/* ✅ Comment out these 2 if files don't exist yet */}
-          <Route path="/booking/:bookingId/payment" element={<BookingPaymentPage />} />
-          <Route path="/booking/:bookingId/success" element={<BookingSuccessPage />} />
-          <Route path="/guide/my-bookings" element={<MyBookingsPage />} />
-          <Route path="/guide/my-bookings/:bookingId" element={<MyBookingDetailPage />} />
+
+
+           <Route path="/become-a-guide" element={<ApplyGuidePage />} />
+
+          <Route path="/my-bookings" element={<MyBookingsPage />} />
+         
         </Route>
 
         {/* Guide-only routes */}
-        <Route element={<GuideRoute />}>
-          <Route path="/guide/dashboard" element={<GuideDashboardPage />} />
-          <Route path="/guide/packages" element={<GuidePackagesPage />} />
-          {/* ✅ Edit mode uses EditPackagePage, not GuidePackagesPage */}
-          <Route path="/guide/packages/:packageId" element={<EditPackagePage />} />
-        </Route>
+<Route element={<GuideRoute />}>
+  <Route path="/guide/packages" element={<MyPackagesPage />} />
+  <Route path="/guide/dashboard" element={<GuideDashboard />} />
+</Route>
+
 
         {/* Admin */}
-        <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminLayout><DashboardPage /></AdminLayout>} />
-          <Route path="/admin/users" element={<AdminLayout><UsersPage /></AdminLayout>} />
-          <Route path="/admin/places" element={<AdminLayout><PendingPlacesPage /></AdminLayout>} />
-          <Route path="/admin/reviews" element={<AdminLayout><PendingReviewsPage /></AdminLayout>} />
-          <Route path="/admin/reports" element={<AdminLayout><ReportsPage /></AdminLayout>} />
-          <Route path="/admin/audit" element={<AdminLayout><AuditLogsPage /></AdminLayout>} />
-          <Route path="/admin/broadcast" element={<AdminLayout><BroadcastPage /></AdminLayout>} />
-          <Route path="/admin/guide-apps" element={<AdminLayout><GuideApplicationsPage /></AdminLayout>} />
-        </Route>
+       <Route element={<AdminRoute />}>
+  <Route path="/admin" element={<AdminLayout><DashboardPage /></AdminLayout>} />
+  <Route path="/admin/users" element={<AdminLayout><UsersPage /></AdminLayout>} />
+  <Route path="/admin/places" element={<AdminLayout><PendingPlacesPage /></AdminLayout>} />
+  <Route path="/admin/reviews" element={<AdminLayout><PendingReviewsPage /></AdminLayout>} />
+  <Route path="/admin/reports" element={<AdminLayout><ReportsPage /></AdminLayout>} />
+  <Route path="/admin/audit" element={<AdminLayout><AuditLogsPage /></AdminLayout>} />
+  <Route path="/admin/broadcast" element={<AdminLayout><BroadcastPage /></AdminLayout>} />
+  <Route path="/admin/guide-applications" element={<AdminLayout><GuideApplicationsPage /></AdminLayout>} />
+  <Route path="/admin/guides" element={<AdminLayout><GuidesListPage /></AdminLayout>} />
+  <Route path="/admin/bookings" element={<AdminLayout><AdminBookingsPage /></AdminLayout>} />
+  <Route path="/admin/financial-dashboard" element={<AdminLayout><AdminFinancialDashboard /></AdminLayout>} />
+  <Route path="/admin/withdrawals" element={<AdminLayout><AdminWithdrawals /></AdminLayout>} />
+</Route>
       </Routes>
       <Footer />
     </BrowserRouter>

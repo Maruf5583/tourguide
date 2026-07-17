@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usersApi } from '../../api/users.api'
+import { bookingApi } from '../../api/booking.api'
 import { useAuthStore } from '../../store/auth.store'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import { formatDate, formatTime } from '../../utils/formatters'
@@ -44,6 +45,15 @@ export default function ProfilePage() {
   const { data: savedDistricts } = useQuery({
     queryKey: ['saved-districts', user?.id],
     queryFn: () => usersApi.getSavedDistricts().then(r => r.data),
+    enabled: !!user?.id,
+  })
+
+  // NOTE: bookingApi.getMyBookings + response shape (items/totalCount/packageName/
+  // guideName/status/bookingDate) is assumed to follow the same pattern as the other
+  // endpoints above. Adjust field names here to match your actual booking.api.js.
+  const { data: bookings } = useQuery({
+    queryKey: ['my-bookings', user?.id, 1],
+    queryFn: () => bookingApi.getMyBookings({ pageNumber: 1, pageSize: 5 }).then(r => r.data),
     enabled: !!user?.id,
   })
 
@@ -130,7 +140,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Quick stats ── */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         <Link to="/favourites" className="card p-4 text-center hover:shadow-md transition-shadow">
           <Heart size={18} className="mx-auto mb-1 text-red-400" />
           <p className="text-lg font-bold text-gray-900">{favouriteCount}</p>
@@ -146,10 +156,11 @@ export default function ProfilePage() {
           <p className="text-lg font-bold text-gray-900">{visitHistory?.totalCount ?? 0}</p>
           <p className="text-xs text-gray-500">Visits</p>
         </Link>
-         <Link to="/guide/my-bookings" className="card p-4 text-center hover:shadow-md transition-shadow">
-  <Calendar size={18} className="mx-auto mb-1 text-purple-500" />
-  <p className="text-xs text-gray-500">My bookings</p>
-</Link>
+        <Link to="/my-bookings" className="card p-4 text-center hover:shadow-md transition-shadow">
+          <Calendar size={18} className="mx-auto mb-1 text-primary-500" />
+          <p className="text-lg font-bold text-gray-900">{bookings?.totalCount ?? 0}</p>
+          <p className="text-xs text-gray-500">Bookings</p>
+        </Link>
       </div>
 
       {/* ── Favourites preview ── */}
@@ -215,6 +226,37 @@ export default function ProfilePage() {
         )}
       </div>
 
+      {/* ── Bookings preview ── */}
+      <div className="card p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+            <Calendar size={16} className="text-primary-500" /> My bookings
+          </h2>
+          <Link to="/my-bookings" className="text-xs text-primary-600 hover:underline flex items-center gap-0.5">
+            View all <ChevronRight size={12} />
+          </Link>
+        </div>
+        {!bookings?.items?.length ? (
+          <p className="text-sm text-gray-400 py-2">No bookings yet</p>
+        ) : (
+          <div className="space-y-2">
+            {bookings.items.slice(0, 4).map((b) => (
+              <Link key={b.id} to={`/my-bookings/${b.id}`}
+                className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="w-9 h-9 rounded-lg overflow-hidden bg-primary-50 shrink-0 flex items-center justify-center">
+                  <Calendar size={14} className="text-primary-300" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{b.packageName || b.guideName}</p>
+                  <p className="text-xs text-gray-400">{b.status}</p>
+                </div>
+                <p className="text-xs text-gray-400 shrink-0">{formatDate(b.bookingDate)}</p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* ── Saved districts ── */}
       <div className="card p-5">
         <div className="flex items-center justify-between mb-3">
@@ -224,7 +266,6 @@ export default function ProfilePage() {
           <Link to="/saved-districts" className="text-xs text-primary-600 hover:underline flex items-center gap-0.5">
             Manage <ChevronRight size={12} />
           </Link>
-         
         </div>
         {!savedDistricts?.length ? (
           <p className="text-sm text-gray-400 py-2">No saved districts yet</p>
@@ -238,4 +279,4 @@ export default function ProfilePage() {
       </div>
     </div>
   )
-}
+} 

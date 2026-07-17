@@ -1,48 +1,26 @@
 import client from './client'
 
 export const guideApi = {
-  apply:            (data)          => client.post('/guide/apply', data),
-  uploadDocument:   (file, docType) => {
-    const fd = new FormData()
-    fd.append('file', file)
-    return client.post('/guide/upload-documents', fd, { params: { docType } })
+  uploadDocument: async (file, docType) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const { data } = await client.post('/guide/upload-documents', formData, {
+      params: { docType },
+    })
+    return data.url // exact response shape: { url, docType }
   },
 
-  removeGuide: (guideProfileId, reason) =>
-    client.delete(`/guide/${guideProfileId}/remove`, { data: { reason } }),
+  apply: (payload) => client.post('/guide/apply', payload),
 
-  getApplications:   (params)   => client.get('/guide/applications', { params }),
-  reviewApplication: (id, data) => client.patch(`/guide/applications/${id}/review`, {
-    ...data, applicationId: Number(id),
-  }),
+  getApplications: ({ status, pageNumber = 1, pageSize = 10 } = {}) =>
+    client.get('/guide/applications', { params: { status, pageNumber, pageSize } }),
 
-  createPackage:  (data)              => client.post('/guide/packages', data),
-  updatePackage:  (packageId, data)   => client.put(`/guide/packages/${packageId}`, data),
-  deletePackage:  (packageId)         => client.delete(`/guide/packages/${packageId}`),
+  reviewApplication: (id, payload) =>
+    client.patch(`/guide/applications/${id}/review`, payload),
 
-  // ✅ REMOVED: getPackageById — backend e ei endpoint nai
-  // Fetch single package from my-packages list instead
-  getPackageById: (packageId) =>
-    client.get('/guide/my-packages').then((res) => {
-      const list = res.data?.$values || res.data || []
-      const found = list.find((p) => String(p.id) === String(packageId))
-      if (!found) throw new Error('Package not found')
-      return { data: found }
-    }),
+  removeGuide: (guideProfileId, payload) =>
+    client.delete(`/guide/${guideProfileId}/remove`, { data: payload }),
 
-  createBooking:  (data)      => client.post('/guide/bookings', data),
-  updateLocation: (data)      => client.post('/guide/location/update', data),
-  stopLocation:   (bookingId) => client.post(`/guide/location/stop/${bookingId}`),
-  getRevenue:     (year)      => client.get('/guide/revenue', { params: { year } }),
-
-  getGuides:       (params)  => client.get('/guide', { params }),
-  getGuideProfile: (guideId) => client.get(`/guide/${guideId}`),
-  getMyPackages:   ()        => client.get('/guide/my-packages'),
-
-  // ── My bookings (Guide-side) ──
-  getMyBookings: (params) =>
-    client.get('/guide/my-bookings', { params }),
-
-  getMyBookingById: (bookingId) =>
-    client.get(`/guide/my-bookings/${bookingId}`),
+  getGuides: (params) => client.get('/guide', { params }),
+  getGuideDetail: (guideId) => client.get(`/guide/${guideId}`),
 }
