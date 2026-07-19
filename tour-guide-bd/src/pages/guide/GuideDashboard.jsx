@@ -237,8 +237,8 @@ function BalanceTab() {
   return (
     <div className="grid grid-cols-2 gap-3">
       <BalanceStatCard icon={TrendingUp} label="Total Earned" value={fmt(d.totalEarned)} color="green" />
-      <BalanceStatCard icon={Clock} label="Pending (3 din por available)" value={fmt(d.pendingAmount)} color="amber" />
-      <BalanceStatCard icon={Wallet} label="Available (withdraw jogyo)" value={fmt(d.availableAmount)} color="blue" />
+      <BalanceStatCard icon={Clock} label="Pending (after 10 minutes)" value={fmt(d.pendingAmount)} color="amber" />
+      <BalanceStatCard icon={Wallet} label="Available (withdraw eligible)" value={fmt(d.availableAmount)} color="blue" />
       <BalanceStatCard icon={CheckCircle} label="Withdrawn" value={fmt(d.withdrawnAmount)} color="gray" />
       {d.pendingWithdrawal > 0 && (
         <div className="col-span-2 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 text-sm text-amber-700">
