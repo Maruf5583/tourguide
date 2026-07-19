@@ -48,6 +48,8 @@ import MyPackagesPage from './pages/guide/MyPackagesPage'
 import MyBookingsPage from './pages/user/MyBookingsPage'
 
 import AdminBookingsPage from './pages/admin/AdminBookingsPage'
+
+import ReviewPage from './pages/user/ReviewPage'
 import About from './pages/About'
 import Contact from './pages/Contact'
 
@@ -100,6 +102,7 @@ export default function App() {
            <Route path="/become-a-guide" element={<ApplyGuidePage />} />
 
           <Route path="/my-bookings" element={<MyBookingsPage />} />
+           <Route path="/review/:bookingId" element={<ReviewPage />} />
          
         </Route>
 

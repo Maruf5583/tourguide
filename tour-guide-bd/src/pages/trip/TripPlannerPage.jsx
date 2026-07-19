@@ -19,170 +19,137 @@ const FOOD_LEVELS = [
   { value: 3, label: 'VIP',    emoji: '🥗', desc: '~৳600/meal', color: 'border-purple-400 bg-purple-50 text-purple-700' },
 ]
 
-// ── Inline Mapbox map component ───────────────────────────
-function TripMap({ res, submitted }) {
+// ── Inline Mapbox map component — destination marker only ──
+function TripMap({ res }) {
   const mapContainer = useRef(null)
   const mapRef        = useRef(null)
   const [mapReady, setMapReady] = useState(false)
 
-  // load mapbox once
+  // load mapbox script once
   useEffect(() => {
     if (window.mapboxgl) { setMapReady(true); return }
     if (document.querySelector('script[data-mapbox]')) {
-      const t = setInterval(() => { if (window.mapboxgl) { setMapReady(true); clearInterval(t) } }, 100)
+      const t = setInterval(() => {
+        if (window.mapboxgl) { setMapReady(true); clearInterval(t) }
+      }, 100)
       return () => clearInterval(t)
     }
     const link = document.createElement('link')
     link.rel = 'stylesheet'
     link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css'
     document.head.appendChild(link)
+
     const script = document.createElement('script')
     script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js'
     script.dataset.mapbox = 'true'
     script.onload = () => setMapReady(true)
+    script.onerror = () => console.error('❌ Mapbox script load failed')
     document.head.appendChild(script)
   }, [])
 
+  // destination coords — adjust field names here if your API uses different names
+  const destLat = res?.toStandLat ?? res?.destinationLat ?? res?.placeLat
+  const destLng = res?.toStandLng ?? res?.destinationLng ?? res?.placeLng
+  const destName = res?.placeName || res?.nearestToStand || 'Destination'
+
   useEffect(() => {
     if (!mapReady || !mapContainer.current || mapRef.current) return
-    if (!MAPBOX_TOKEN) return
 
-    const userLat  = submitted?.userLat
-    const userLng  = submitted?.userLng
-    const fromLat  = res.fromStandLat
-    const fromLng  = res.fromStandLng
-    const toLat    = res.toStandLat
-    const toLng    = res.toStandLng
+    if (!MAPBOX_TOKEN) {
+      console.error('❌ MAPBOX_TOKEN missing — check .env VITE_MAPBOX_TOKEN')
+      return
+    }
+    if (!destLat || !destLng) {
+      console.error('❌ Destination coords missing. res object:', res)
+      return
+    }
 
     window.mapboxgl.accessToken = MAPBOX_TOKEN
 
-    // center on midpoint of route
-    const centerLng = (userLng + toLng) / 2
-    const centerLat = (userLat + toLat) / 2
-
-   mapRef.current = new window.mapboxgl.Map({
+    mapRef.current = new window.mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [centerLng, centerLat],
-      zoom: 9,
+      center: [destLng, destLat],
+      zoom: 12,
     })
 
     mapRef.current.addControl(new window.mapboxgl.NavigationControl(), 'top-right')
 
-    // container size thik moto calculate hote pore resize call kora
-    setTimeout(() => {
-      mapRef.current?.resize()
-    }, 200)
-
-    
     mapRef.current.on('load', () => {
-      const map = mapRef.current
+      mapRef.current.resize()
 
-      // ── route line ──
-      const routePoints = []
-      if (userLat && userLng) routePoints.push([userLng, userLat])
-      if (fromLat && fromLng) routePoints.push([fromLng, fromLat])
-      if (toLat && toLng)     routePoints.push([toLng, toLat])
+      const el = document.createElement('div')
+      el.style.cssText = `
+        width:36px;height:36px;border-radius:50% 50% 50% 0;
+        background:#10b981;border:2px solid white;
+        box-shadow:0 3px 10px rgba(0,0,0,0.3);
+        transform:rotate(-45deg);display:flex;
+        align-items:center;justify-content:center;
+      `
+      const inner = document.createElement('span')
+      inner.style.cssText = 'transform:rotate(45deg);font-size:16px;'
+      inner.textContent = '📍'
+      el.appendChild(inner)
 
-      if (routePoints.length >= 2) {
-        map.addSource('route', {
-          type: 'geojson',
-          data: { type: 'Feature', geometry: { type: 'LineString', coordinates: routePoints } },
-        })
-        // background thick line
-        map.addLayer({
-          id: 'route-bg',
-          type: 'line',
-          source: 'route',
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#1e40af', 'line-width': 6, 'line-opacity': 0.25 },
-        })
-        // foreground line
-        map.addLayer({
-          id: 'route-line',
-          type: 'line',
-          source: 'route',
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#2563eb', 'line-width': 4 },
-        })
-
-        // fit bounds
-        const bounds = routePoints.reduce(
-          (b, p) => b.extend(p),
-          new window.mapboxgl.LngLatBounds(routePoints[0], routePoints[0])
-        )
-        map.fitBounds(bounds, { padding: 60, maxZoom: 13, duration: 800 })
-      }
-
-      // ── markers ──
-      const addMarker = (lat, lng, color, emoji, label) => {
-        if (!lat || !lng) return
-        const el = document.createElement('div')
-        el.style.cssText = `
-          width:36px;height:36px;border-radius:50% 50% 50% 0;
-          background:${color};border:2px solid white;
-          box-shadow:0 3px 10px rgba(0,0,0,0.3);
-          transform:rotate(-45deg);display:flex;
-          align-items:center;justify-content:center;cursor:pointer;
-        `
-        const inner = document.createElement('span')
-        inner.style.cssText = 'transform:rotate(45deg);font-size:16px;'
-        inner.textContent = emoji
-        el.appendChild(inner)
-        new window.mapboxgl.Marker(el)
-          .setLngLat([lng, lat])
-          .setPopup(new window.mapboxgl.Popup({ offset: 20 }).setText(label))
-          .addTo(map)
-      }
-
-      // user location — yellow
-      addMarker(userLat, userLng, '#f59e0b', '📍', 'Your location')
-      // from terminal — blue
-      addMarker(fromLat, fromLng, '#3b82f6', '🚌', res.nearestFromStand || 'From terminal')
-      // to terminal — green
-      addMarker(toLat, toLng, '#10b981', '🚌', res.nearestToStand || 'To terminal')
+      new window.mapboxgl.Marker(el)
+        .setLngLat([destLng, destLat])
+        .setPopup(new window.mapboxgl.Popup({ offset: 20 }).setText(destName))
+        .addTo(mapRef.current)
     })
 
-    return () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null } }
-  }, [mapReady, res, submitted])
+    // extra safety resize after mount (layout shift, sticky container etc.)
+    const resizeTimer = setTimeout(() => mapRef.current?.resize(), 300)
 
-  if (!MAPBOX_TOKEN) return null
+    return () => {
+      clearTimeout(resizeTimer)
+      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
+    }
+  }, [mapReady, destLat, destLng, destName])
+
+  if (!MAPBOX_TOKEN) {
+    return (
+      <div className="w-full h-[400px] rounded-2xl border border-amber-200 bg-amber-50 flex items-center justify-center text-sm text-amber-700 p-4 text-center">
+        MAPBOX_TOKEN missing — .env file e VITE_MAPBOX_TOKEN set koro
+      </div>
+    )
+  }
+
+  if (!destLat || !destLng) {
+    return (
+      <div className="w-full h-[400px] rounded-2xl border border-red-200 bg-red-50 flex items-center justify-center text-sm text-red-700 p-4 text-center">
+        Destination coordinates not found in response. Check console log for the `res` object.
+      </div>
+    )
+  }
 
   return (
-    <div className="relative w-full h-full min-h-[400px] rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
-      <div ref={mapContainer} className="absolute inset-0" />
+    <div
+      className="relative w-full rounded-2xl overflow-hidden border border-gray-200 shadow-sm"
+      style={{ height: '400px' }}
+    >
+      <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
 
-      {/* distance + time overlay */}
+      {/* distance + destination overlay */}
       <div className="absolute top-3 left-3 z-10 bg-white/95 backdrop-blur-sm rounded-xl shadow-md px-4 py-3 space-y-1.5">
         <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-          <span className="text-blue-600 font-bold">{res.fromDistrict}</span>
-          <ArrowRight size={14} className="text-gray-400" />
-          <span className="text-green-600 font-bold">{res.toDistrict}</span>
+          <span className="text-green-600 font-bold">{destName}</span>
         </div>
-        <div className="flex items-center gap-3 text-xs text-gray-500">
-          <span className="flex items-center gap-1">
-            <Clock size={11} className="text-purple-500" />
-            {res.totalTravelTime || formatMinutes(res.totalTravelMinutes)}
-          </span>
-          <span className="flex items-center gap-1">
-            <Route size={11} className="text-blue-500" />
-            {((res.userToStandKm || 0) + (res.standToDestKm || 0)).toFixed(1)} km
-          </span>
-        </div>
+        {res?.totalTravelTime || res?.totalTravelMinutes ? (
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <Clock size={11} className="text-purple-500" />
+              {res.totalTravelTime || formatMinutes(res.totalTravelMinutes)}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       {/* legend */}
       <div className="absolute bottom-3 left-3 z-10 bg-white/95 backdrop-blur-sm rounded-xl shadow-md px-3 py-2 space-y-1">
-        {[
-          { color: 'bg-amber-400',  label: 'Your location' },
-          { color: 'bg-blue-500',   label: res.nearestFromStand || 'From terminal' },
-          { color: 'bg-emerald-500',label: res.nearestToStand   || 'To terminal' },
-        ].map(({ color, label }) => (
-          <div key={label} className="flex items-center gap-2 text-xs text-gray-700">
-            <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${color}`} />
-            <span className="truncate max-w-[160px]">{label}</span>
-          </div>
-        ))}
+        <div className="flex items-center gap-2 text-xs text-gray-700">
+          <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-emerald-500" />
+          <span className="truncate max-w-[160px]">{destName}</span>
+        </div>
       </div>
     </div>
   )
@@ -242,6 +209,11 @@ export default function TripPlannerPage() {
     queryFn:  () => tripPlannerApi.smartCalculate(submitted).then(r => r.data),
     retry:    false,
   })
+
+  // debug helper — remove once map is confirmed working
+  useEffect(() => {
+    if (res) console.log('smartCalculate response:', res)
+  }, [res])
 
   const b = res?.budget
 
@@ -559,7 +531,7 @@ export default function TripPlannerPage() {
             {/* RIGHT — sticky map */}
             <div className="w-full lg:w-[480px] shrink-0 order-1 lg:order-2">
               <div className="sticky top-20">
-                <TripMap res={res} submitted={submitted} />
+                <TripMap res={res} />
 
                 {/* map place info */}
                 <div className="mt-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">

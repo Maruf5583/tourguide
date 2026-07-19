@@ -143,7 +143,7 @@ function BookingCard(props) {
         </div>
         {b.canReview && (
           <Link
-            to={'/guides/' + b.guideProfileId + '?review=' + b.bookingId}
+           to={'/review/' + b.bookingId}
             className="px-3 py-1 bg-amber-500 text-white text-xs rounded-xl hover:bg-amber-600 transition-colors flex items-center gap-1"
           >
             <Star size={12} /> Review
