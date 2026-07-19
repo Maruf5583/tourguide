@@ -30,7 +30,7 @@ export default function GuideDashboard() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Guide Dashboard</h1>
-      <p className="text-sm text-gray-400 mb-6">Bookings, revenue, balance, payment methods আর withdrawal — সব এক জায়গায়</p>
+      <p className="text-sm text-gray-400 mb-6">Bookings, revenue, balance, payment methods and  withdrawal </p>
 
       {/* Tab bar */}
       <div className="flex gap-1 border-b border-gray-100 mb-6 overflow-x-auto">
@@ -110,7 +110,7 @@ function BookingsTab() {
   })
 
   if (queryResult.isLoading) return <LoadingSpinner center />
-  if (queryResult.isError) return <div className="text-center py-12 text-gray-400">Bookings load korte parlam na.</div>
+  if (queryResult.isError) return <div className="text-center py-12 text-gray-400">Bookings are not avalable.</div>
 
   var data = queryResult.data
   var items = (data && data.items) || []
@@ -140,7 +140,7 @@ function BookingsTab() {
       {items.length === 0 && (
         <div className="text-center py-16 border-2 border-dashed border-gray-100 rounded-2xl">
           <Calendar size={40} className="mx-auto text-gray-200 mb-3" />
-          <p className="text-gray-400 font-medium">Kono booking nai</p>
+          <p className="text-gray-400 font-medium">Booking not found</p>
         </div>
       )}
 
@@ -230,7 +230,7 @@ function BalanceTab() {
   })
 
   if (queryResult.isLoading) return <LoadingSpinner center />
-  if (queryResult.isError) return <div className="text-center py-12 text-gray-400">Balance load hocche na.</div>
+  if (queryResult.isError) return <div className="text-center py-12 text-gray-400">Balance not available.</div>
 
   var d = queryResult.data
 
@@ -242,7 +242,7 @@ function BalanceTab() {
       <BalanceStatCard icon={CheckCircle} label="Withdrawn" value={fmt(d.withdrawnAmount)} color="gray" />
       {d.pendingWithdrawal > 0 && (
         <div className="col-span-2 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 text-sm text-amber-700">
-          তোমার <strong>{fmt(d.pendingWithdrawal)}</strong> withdrawal request process hocche.
+          Your <strong>{fmt(d.pendingWithdrawal)}</strong> withdrawal request is being processed.
         </div>
       )}
     </div>
@@ -341,7 +341,7 @@ function RevenueTab() {
   if (isLoading) return <LoadingSpinner center />
   if (isError) return (
     <div className="text-center py-12 text-gray-400">
-      Revenue data load hocche na. Guide profile active ache kina check koro.
+      Revenue data not available. Please check your guide profile.
     </div>
   )
 
@@ -441,7 +441,7 @@ function PaymentMethodForm(props) {
   var addMutation = useMutation({
     mutationFn: function(data) { return guideDashboardApi.addPaymentMethod(data) },
     onSuccess: function(res) {
-      toast.success('Payment method add hoyeche')
+      toast.success('Payment method added successfully')
       onAdded({
         id: res.data,
         type: type, mobileNumber: mobileNumber, bankName: bankName,
@@ -451,7 +451,7 @@ function PaymentMethodForm(props) {
       onClose()
     },
     onError: function(err) {
-      toast.error(err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Add korte parlam na')
+      toast.error(err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Failed to add payment method')
     },
   })
 
@@ -473,7 +473,7 @@ function PaymentMethodForm(props) {
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-gray-100 rounded-2xl p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">Notun Payment Method</h3>
+        <h3 className="font-semibold text-gray-900">Add Payment Method</h3>
         <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
       </div>
 
@@ -513,7 +513,7 @@ function PaymentMethodForm(props) {
 
       <label className="flex items-center gap-2 text-sm text-gray-600">
         <input type="checkbox" checked={isDefault} onChange={function(e) { setIsDefault(e.target.checked) }} />
-        Default payment method hishebe set koro
+        Set as default payment method
       </label>
 
       <button type="submit" disabled={addMutation.isPending} className="w-full bg-primary-600 text-white py-2 rounded-xl text-sm font-medium hover:bg-primary-700 disabled:opacity-50">
@@ -547,19 +547,19 @@ function PaymentMethodsTab() {
     mutationFn: function(id) { return guideDashboardApi.deletePaymentMethod(id) },
     onMutate: function(id) { setDeletingId(id) },
     onSuccess: function(_res, id) {
-      toast.success('Payment method delete kora hoyeche')
+      toast.success('Payment method deleted successfully')
       setLocalList(function(prev) { return prev.filter(function(m) { return m.id !== id }) })
       qc.invalidateQueries({ queryKey: ['guide-payment-methods'] })
     },
     onError: function(err) {
-      toast.error(err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Delete korte parlam na')
+      toast.error(err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Failed to delete payment method')
     },
     onSettled: function() { setDeletingId(null) },
   })
 
   function handleDelete(id) {
     if (!id) return
-    if (window.confirm('Ei payment method ta delete korte chao?')) {
+    if (window.confirm('Are you sure you want to delete this payment method?')) {
       deleteMutation.mutate(id)
     }
   }
@@ -580,7 +580,7 @@ function PaymentMethodsTab() {
       {methods.length === 0 && !showForm && (
         <div className="text-center py-12 border-2 border-dashed border-gray-100 rounded-2xl">
           <CreditCard size={36} className="mx-auto text-gray-200 mb-2" />
-          <p className="text-gray-400 text-sm">Kono payment method add kora hoyni</p>
+          <p className="text-gray-400 text-sm">No payment methods added yet</p>
         </div>
       )}
 
@@ -822,7 +822,7 @@ function WithdrawTab(props) {
       </div>
 
       {methods.length === 0 && (
-        <p className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-xl">Withdraw korar age ekta Payment Method add koro.</p>
+        <p className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-xl">add a payment method before withdraw.</p>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-3">
